@@ -15,7 +15,7 @@ class interface(gui.QMainWindow):
         self.connect()
 
         self.timer = core.QTimer(self)
-        self.timer.setInterval(250)
+        self.timer.setInterval(1000)
         self.timer.timeout.connect(self.timer_event)
         self.timer.start()
 
@@ -39,8 +39,10 @@ class interface(gui.QMainWindow):
             gui.qApp.quit()
 
     def timer_event(self):
-        # update display
-        pass
+
+        voltages = self.connection.ad5764_dcbox.get_voltages()
+        for device in self.ad5764_dcbox_devices:
+            device.update_readouts(voltages)
 
     def doUI(self):
         self.tabs=gui.QTabWidget(self)
@@ -51,9 +53,14 @@ class interface(gui.QMainWindow):
         servers = str(self.connection.servers).splitlines()
         print(servers)
 
+        self.ad5764_dcbox_devices = []
         if 'ad5764_dcbox' in servers:
-            self.ad5764_dcbox = ad5764_dcbox_VFP_widget(self)
-            self.tabs.addTab(self.ad5764_dcbox,"AD5746 DCbox")
+            devices = self.connection.ad5764_dcbox.list_devices()
+            for device in devices:
+                if '4' in device[1]:
+                    com = device[1].partition('(')[2][:-1]
+                    self.ad5764_dcbox_devices.append(ad5764_dcbox_VFP_widget(self,self.connection,device,com))
+                    self.tabs.addTab(self.ad5764_dcbox_devices[-1],device[1])
 
         self.setFixedSize((self.ll+self.bl)*4 + self.iw*3 + 6, (self.iw+self.ls)*2 + self.iw + 27)
         self.move(2,2)

@@ -6,9 +6,11 @@ import os
 class portDisplay(gui.QWidget):
     def __init__(self,parent,num,pos,icon,ll=96,ls=23,iw=32):
         super(portDisplay,self).__init__(parent)
+        self.parent = parent
+        self.port   = num
         
         self.label_current_value = simpleText(self,"Loading...",[0,0,ll,ls],"Current value")
-        self.input_set_value     = floatInput(self,[0,10],4,
+        self.input_set_value     = floatInput(self,[-10,10],4,
                                               'Enter a value here and press "set" to set the voltage on the selected DCbox.\nBe careful not to use this feature while a sweep is using the selected port.',
                                               [0,iw+2,ll,ls],
                                               'Set value')
@@ -27,15 +29,32 @@ class portDisplay(gui.QWidget):
         self.setMinimumSize(ll+max([iw,button_size]),ls+iw)
 
     def set_value(self):
-        print("ABOOGABOOAGA")
+        value = self.input_set_value.getValue()
+        if str(value) in ['nan','inf']:
+            print("Error: invalid value.")
+            return False
+        if (value > 10) or (value < -10):
+            print("Error: value too large. Must be between -10.0 and 10.0")
+            return False
+        try:
+            self.parent.connection.ad5764_dcbox.select_device(self.parent.device[0])
+            response =  self.parent.connection.ad5764_dcbox.set_voltage(self.port, value)
+            print(response)
+        except:
+            print("Error: something went wrong. The device selected might not be a DCbox device.")
 
+    def update_readout(self,value):
+        self.label_current_value.setText(str(value))
 
 
 
 
 class ad5764_dcbox_VFP_widget(gui.QWidget):
-    def __init__(self,parent):
+    def __init__(self,parent,connection,device,com):
         super(ad5764_dcbox_VFP_widget,self).__init__(parent)
+        self.connection = connection
+        self.device     = device
+        self.com        = com
         icon = gui.QPixmap(os.getcwd()+'\\devices\\resources\\BNCport.png')
         self.ports = []
         sp_x = 171 + 32
@@ -48,3 +67,11 @@ class ad5764_dcbox_VFP_widget(gui.QWidget):
         col = gui.QColor(255,255,255)
         self.setStyleSheet('QWidget { background-color: %s }'%col.name())
 
+    def update_readouts(self,voltages):
+        for entry in voltages:
+            if entry[0] == self.com:
+                for port in range(8):
+                    self.ports[port].update_readout(entry[port+1])
+                return True
+        print("Error: device com not found in voltage list")
+        return False
