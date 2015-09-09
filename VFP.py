@@ -51,7 +51,7 @@ class interface(gui.QMainWindow):
         self.tabs.setStyleSheet('QWidget { background-color: %s }'%col.name())
 
         servers = str(self.connection.servers).splitlines()
-        print(servers)
+        #print(servers)
 
         self.ad5764_dcbox_devices = []
         if 'ad5764_dcbox' in servers:

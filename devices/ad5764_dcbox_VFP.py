@@ -10,7 +10,7 @@ class portDisplay(gui.QWidget):
         self.port   = num
         
         self.label_current_value = simpleText(self,"Loading...",[0,0,ll,ls],"Current value")
-        self.input_set_value     = floatInput(self,[-10,10],4,
+        self.input_set_value     = floatInput(self,[-10,10],8,
                                               'Enter a value here and press "set" to set the voltage on the selected DCbox.\nBe careful not to use this feature while a sweep is using the selected port.',
                                               [0,iw+2,ll,ls],
                                               'Set value')
@@ -66,6 +66,9 @@ class ad5764_dcbox_VFP_widget(gui.QWidget):
 
         col = gui.QColor(255,255,255)
         self.setStyleSheet('QWidget { background-color: %s }'%col.name())
+
+        self.connection.ad5764_dcbox.select_device(self.device[0])
+        self.connection.ad5764_dcbox.read_voltages()
 
     def update_readouts(self,voltages):
         for entry in voltages:
