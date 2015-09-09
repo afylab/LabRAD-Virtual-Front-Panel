@@ -2,6 +2,7 @@ from PyQt4 import QtCore as core, QtGui as gui
 import sys,math,time
 
 from devices.ad5764_dcbox_VFP import ad5764_dcbox_VFP_widget
+from devices.ad5764_acbox_VFP import ad5764_acbox_VFP_widget
 
 class interface(gui.QMainWindow):
     def __init__(self,ll=96,ls=23,iw=32,bl=75):
@@ -40,9 +41,15 @@ class interface(gui.QMainWindow):
 
     def timer_event(self):
 
-        voltages = self.connection.ad5764_dcbox.get_voltages()
+        dc_voltages = self.connection.ad5764_dcbox.get_voltages()
         for device in self.ad5764_dcbox_devices:
-            device.update_readouts(voltages)
+            device.update_readouts(dc_voltages)
+
+        ac_voltages = self.connection.ad5764_acbox.get_voltages()
+        for device in self.ad5764_acbox_devices:
+            device.update_readouts(ac_voltages)
+
+        
 
     def doUI(self):
         self.tabs=gui.QTabWidget(self)
@@ -61,6 +68,15 @@ class interface(gui.QMainWindow):
                     com = device[1].partition('(')[2][:-1]
                     self.ad5764_dcbox_devices.append(ad5764_dcbox_VFP_widget(self,self.connection,device,com))
                     self.tabs.addTab(self.ad5764_dcbox_devices[-1],device[1])
+
+        self.ad5764_acbox_devices = []
+        if 'ad5764_acbox' in servers:
+            devices = self.connection.ad5764_acbox.list_devices()
+            for device in devices:
+                if '8' in device[1]:
+                    com = device[1].partition('(')[2][:-1]
+                    self.ad5764_acbox_devices.append(ad5764_acbox_VFP_widget(self,self.connection,device,com))
+                    self.tabs.addTab(self.ad5764_acbox_devices[-1],device[1])
 
         self.setFixedSize((self.ll+self.bl)*4 + self.iw*3 + 6, (self.iw+self.ls)*2 + self.iw + 27)
         self.move(2,2)
