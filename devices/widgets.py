@@ -46,11 +46,13 @@ class textInput(gui.QLineEdit):
         return str(self.text())
 
 class intInput(gui.QLineEdit):
-    def __init__(self,parent,rng,toolTip,geometry):
+    def __init__(self,parent,rng,toolTip,geometry,placeholder=None):
         super(intInput,self).__init__(parent)
         self.val = gui.QIntValidator(rng[0],rng[1],self)
         self.setValidator(self.val)
         self.setGeometry(geometry[0],geometry[1],geometry[2],geometry[3])
+        if not (placeholder == None):
+            self.setPlaceholderText(placeholder)
     def getValue(self):
         try:
             return int(self.text())

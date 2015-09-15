@@ -40,14 +40,15 @@ class interface(gui.QMainWindow):
             gui.qApp.quit()
 
     def timer_event(self):
+        if self.ad5764_dcbox:
+            dc_voltages = self.connection.ad5764_dcbox.get_voltages()
+            for device in self.ad5764_dcbox_devices:
+                device.update_readouts(dc_voltages)
 
-        dc_voltages = self.connection.ad5764_dcbox.get_voltages()
-        for device in self.ad5764_dcbox_devices:
-            device.update_readouts(dc_voltages)
-
-        ac_voltages = self.connection.ad5764_acbox.get_voltages()
-        for device in self.ad5764_acbox_devices:
-            device.update_readouts(ac_voltages)
+        if self.ad5764_acbox:
+            ac_voltages = self.connection.ad5764_acbox.get_voltages()
+            for device in self.ad5764_acbox_devices:
+                device.update_readouts(ac_voltages)
 
         
 
@@ -62,21 +63,26 @@ class interface(gui.QMainWindow):
 
         self.ad5764_dcbox_devices = []
         if 'ad5764_dcbox' in servers:
-            devices = self.connection.ad5764_dcbox.list_devices()
+            self.ad5764_dcbox = True
+            devices = self.connection.serial_device_manager.list_ad5764_dcbox_devices()
             for device in devices:
-                if '4' in device[1]:
-                    com = device[1].partition('(')[2][:-1]
-                    self.ad5764_dcbox_devices.append(ad5764_dcbox_VFP_widget(self,self.connection,device,com))
-                    self.tabs.addTab(self.ad5764_dcbox_devices[-1],device[1])
+                port = device[0]
+                name = device[1][:-2]
+                self.ad5764_dcbox_devices.append(ad5764_dcbox_VFP_widget(self,self.connection,port))
+                self.tabs.addTab(self.ad5764_dcbox_devices[-1],name)
+        else:self.ad5764_dcbox=False
+
 
         self.ad5764_acbox_devices = []
         if 'ad5764_acbox' in servers:
-            devices = self.connection.ad5764_acbox.list_devices()
+            self.ad5764_acbox=True
+            devices = self.connection.serial_device_manager.list_ad5764_acbox_devices()
             for device in devices:
-                if '8' in device[1]:
-                    com = device[1].partition('(')[2][:-1]
-                    self.ad5764_acbox_devices.append(ad5764_acbox_VFP_widget(self,self.connection,device,com))
-                    self.tabs.addTab(self.ad5764_acbox_devices[-1],device[1])
+                port = device[0]
+                name = device[1][:-2]
+                self.ad5764_acbox_devices.append(ad5764_acbox_VFP_widget(self,self.connection,port))
+                self.tabs.addTab(self.ad5764_acbox_devices[-1],name)
+        else:self.ad5764_acbox=False
 
         self.setFixedSize((self.ll+self.bl)*4 + self.iw*3 + 6, (self.iw+self.ls)*2 + self.iw + 27)
         self.move(2,2)

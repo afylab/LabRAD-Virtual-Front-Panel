@@ -37,7 +37,7 @@ class portDisplay(gui.QWidget):
             print("Error: value too large. Must be between -10.0 and 10.0")
             return False
         try:
-            self.parent.connection.ad5764_dcbox.select_device(self.parent.device[0])
+            self.parent.connection.ad5764_dcbox.select_device(self.parent.device)
             response =  self.parent.connection.ad5764_dcbox.set_voltage(self.port, value)
             print(response)
         except:
@@ -50,10 +50,10 @@ class portDisplay(gui.QWidget):
 
 
 class ad5764_dcbox_VFP_widget(gui.QWidget):
-    def __init__(self,parent,connection,device,com):
+    def __init__(self,parent,connection,com):
         super(ad5764_dcbox_VFP_widget,self).__init__(parent)
         self.connection = connection
-        self.device     = device
+        self.device     = "dcbox (%s)"%com
         self.com        = com
         icon = gui.QPixmap(os.getcwd()+'\\devices\\resources\\BNCport.png')
         self.ports = []
@@ -67,7 +67,7 @@ class ad5764_dcbox_VFP_widget(gui.QWidget):
         col = gui.QColor(255,255,255)
         self.setStyleSheet('QWidget { background-color: %s }'%col.name())
 
-        self.connection.ad5764_dcbox.select_device(self.device[0])
+        self.connection.ad5764_dcbox.select_device(self.device)
         self.connection.ad5764_dcbox.read_voltages()
 
     def update_readouts(self,voltages):

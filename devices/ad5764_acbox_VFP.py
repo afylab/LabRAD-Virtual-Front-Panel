@@ -1,5 +1,5 @@
 from PyQt4 import QtGui as gui, QtCore as core
-from widgets import simpleText,floatInput,queryButton,colorBox
+from widgets import simpleText,intInput,floatInput,queryButton,colorBox
 import os
 
 
@@ -37,7 +37,7 @@ class portDisplay(gui.QWidget):
             print("Error: value must be in range of 0.0 to 1.0")
             return False
         try:
-            self.parent.connection.ad5764_acbox.select_device(self.parent.device[0])
+            self.parent.connection.ad5764_acbox.select_device(self.parent.device)
             response =  self.parent.connection.ad5764_acbox.set_channel_voltage(self.label,value)
             print(response)
         except:
@@ -50,10 +50,10 @@ class portDisplay(gui.QWidget):
 
 
 class ad5764_acbox_VFP_widget(gui.QWidget):
-    def __init__(self,parent,connection,device,com):
+    def __init__(self,parent,connection,com):
         super(ad5764_acbox_VFP_widget,self).__init__(parent)
         self.connection = connection
-        self.device     = device
+        self.device     = "acbox (%s)"%com
         self.com        = com
         icon = gui.QPixmap(os.getcwd()+'\\devices\\resources\\BNCport.png')
         self.ports = []
@@ -69,13 +69,15 @@ class ad5764_acbox_VFP_widget(gui.QWidget):
 
         self.label_frq  = simpleText(self,"Frequency (Hz)" ,[sp_x * 2, ls*0, ll, ls])
         self.label_phs  = simpleText(self,"Phase (degrees)",[sp_x * 2, ls*3, ll, ls])
-        self.output_frq = simpleText(self,"Loading...",[sp_x * 2 + ls, ls*0, ll, ls])
-        self.output_phs = simpleText(self,"Loading...",[sp_x * 2 + ls, ls*0, ll, ls])
+        self.output_frq = simpleText(self,"Loading...",[sp_x * 2 + ll, ls*0, ll, ls])
+        self.output_phs = simpleText(self,"Loading...",[sp_x * 2 + ll, ls*3, ll, ls])
+        self.input_frq  = intInput(self  ,[0,1e8],  '',[sp_x * 2 + ll, ls*1, ll, ls],"set frequency")
+        self.input_phs  = floatInput(self,[0,360],4,'',[sp_x * 2 + ll, ls*4, ll, ls],"set phase")
 
         col = gui.QColor(255,255,255)
         self.setStyleSheet('QWidget { background-color: %s }'%col.name())
 
-        self.connection.ad5764_acbox.select_device(self.device[0])
+        self.connection.ad5764_acbox.select_device(self.device)
         self.connection.ad5764_acbox.read_voltages()
 
     def update_readouts(self,voltages):
