@@ -71,8 +71,17 @@ class ad5764_acbox_VFP_widget(gui.QWidget):
         self.label_phs  = simpleText(self,"Phase (degrees)",[sp_x * 2, ls*3, ll, ls])
         self.output_frq = simpleText(self,"Loading...",[sp_x * 2 + ll, ls*0, ll, ls])
         self.output_phs = simpleText(self,"Loading...",[sp_x * 2 + ll, ls*3, ll, ls])
-        self.input_frq  = intInput(self  ,[0,1e8],  '',[sp_x * 2 + ll, ls*1, ll, ls],"set frequency")
+        self.input_frq  = intInput(self,  [0,1e8],  '',[sp_x * 2 + ll, ls*1, ll, ls],"set frequency")
         self.input_phs  = floatInput(self,[0,360],4,'',[sp_x * 2 + ll, ls*4, ll, ls],"set phase")
+        self.button_frq = queryButton("set",self,'',[sp_x * 2, ls*1, ll, ls],self.write_frq)
+        self.button_phs = queryButton("set",self,'',[sp_x * 2, ls*4, ll, ls],self.write_phs)
+
+        self.label_clockmult = simpleText(self,"Clock multiplier",[sp_x*2 + ll*2 + ls, ls*0, ll, ls])
+        self.input_clockmult = intInput(self,[3,6],''     ,[sp_x*2 + ll*3 + ls, ls*0, int(ll//2), ls])
+        
+        self.button_init     = queryButton("init",self,'' ,[sp_x*2 + ll*2 + ls, ls*1, ll, ls],self.do_init)
+        self.button_reset    = queryButton("reset",self,'',[sp_x*2 + ll*2 + ls, ls*2, ll, ls],self.do_reset)
+        
 
         col = gui.QColor(255,255,255)
         self.setStyleSheet('QWidget { background-color: %s }'%col.name())
@@ -80,12 +89,40 @@ class ad5764_acbox_VFP_widget(gui.QWidget):
         self.connection.ad5764_acbox.select_device(self.device)
         self.connection.ad5764_acbox.read_voltages()
 
+    def write_frq(self):
+        value = self.input_frq.getValue()
+        if not (str(value) == 'nan'):
+            self.connection.ad5764_acbox.select_device(self.device)
+            print(self.connection.ad5764_acbox.set_frequency(float(self.input_frq.getValue())))
+    
+    def write_phs(self):
+        value = self.input_phs.getValue()
+        if not (str(value) == 'nan'):
+            self.connection.ad5764_acbox.select_device(self.device)
+            print(self.connection.ad5764_acbox.set_phase(self.input_phs.getValue()))
+
+    def do_init(self):
+        clock_mult = self.input_clockmult.getValue()
+        if not (str(clock_mult) == 'nan'):
+            self.connection.ad5764_acbox.select_device(self.device)
+            print(self.connection.ad5764_acbox.initialize(clock_mult))
+
+    def do_reset(self):
+        self.connection.ad5764_acbox.select_device(self.device)
+        print(self.connection.ad5764_acbox.reset())
+
+
     def update_readouts(self,voltages):
         for entry in voltages:
             if entry[0] == self.com:
                 for port in range(4):
                     self.ports[port].update_readout(entry[port+1])
                 
+                # frequency
+                self.output_frq.setText(entry[5])
+
+                # phase
+                self.output_phs.setText(entry[6]+'\xb0')
 
 
                 

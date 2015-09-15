@@ -32,7 +32,10 @@ class queryButton(gui.QPushButton):
     def __init__(self,name,parent,toolTip,pos,function):
         super(queryButton,self).__init__(name,parent)
         self.setToolTip(toolTip)
-        self.resize(self.sizeHint())
+        if len(pos)<4:
+            self.resize(self.sizeHint())
+        else:
+            self.resize(pos[2],pos[3])
         self.move(pos[0],pos[1])
         self.clicked.connect(function)
 
