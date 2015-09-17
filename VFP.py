@@ -19,6 +19,7 @@ class interface(gui.QMainWindow):
         self.timer.setInterval(1000)
         self.timer.timeout.connect(self.timer_event)
         self.timer.start()
+        self.tab_changed()
 
     def connect(self):
         import labrad
@@ -46,7 +47,7 @@ class interface(gui.QMainWindow):
                 device.update_readouts(dc_voltages)
 
         if self.ad5764_acbox:
-            ac_voltages = self.connection.ad5764_acbox.get_voltages()
+            ac_voltages = self.connection.ad5764_acbox.get_settings()
             for device in self.ad5764_acbox_devices:
                 device.update_readouts(ac_voltages)
 
@@ -57,6 +58,7 @@ class interface(gui.QMainWindow):
         self.setCentralWidget(self.tabs)
         col = gui.QColor(223,242,243)
         self.tabs.setStyleSheet('QWidget { background-color: %s }'%col.name())
+        self.tabs.currentChanged.connect(self.tab_changed)
 
         servers = str(self.connection.servers).splitlines()
         #print(servers)
@@ -88,7 +90,9 @@ class interface(gui.QMainWindow):
         self.move(2,2)
         self.show()
 
-
+    def tab_changed(self):
+        size = self.tabs.currentWidget().size
+        self.setFixedSize(size[0],size[1])
 
 
 if __name__=='__main__':

@@ -70,6 +70,9 @@ class ad5764_dcbox_VFP_widget(gui.QWidget):
         self.connection.ad5764_dcbox.select_device(self.device)
         self.connection.ad5764_dcbox.read_voltages()
 
+        # size
+        self.size = [sp_x*4 - 25, sp_y*2 - 4]
+
     def update_readouts(self,voltages):
         for entry in voltages:
             if entry[0] == self.com:

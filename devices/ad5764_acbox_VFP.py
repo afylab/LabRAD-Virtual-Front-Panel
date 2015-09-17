@@ -2,6 +2,8 @@ from PyQt4 import QtGui as gui, QtCore as core
 from widgets import simpleText,intInput,floatInput,queryButton,colorBox
 import os
 
+from math import pi,sin,cos
+global tau; tau = 2*pi
 
 class portDisplay(gui.QWidget):
     def __init__(self,parent,label,pos,icon,ll=96,ls=23,iw=32):
@@ -81,13 +83,30 @@ class ad5764_acbox_VFP_widget(gui.QWidget):
         
         self.button_init     = queryButton("init",self,'' ,[sp_x*2 + ll*2 + ls, ls*1, ll, ls],self.do_init)
         self.button_reset    = queryButton("reset",self,'',[sp_x*2 + ll*2 + ls, ls*2, ll, ls],self.do_reset)
-        
+
+        x2_perp_tt  = """Portion of X2 perpendicular to X1
+(X2 full scale / X1 full scale) * (X2 value / X1 value) * sin(offset)"""
+        x2_par_tt = """Portion of X2 parallel to X1
+(X2 full scale / X1 full scale) * (X2 value / X1 value) * cos(offset)""" 
+
+        self.label_x2_parr  = simpleText(self,"X2 parallel"     ,[sp_x*0, sp_y*2 + ls*0, ll*1, ls],x2_par_tt )
+        self.label_x2_perp  = simpleText(self,"X2 perpendicular",[sp_x*1, sp_y*2 + ls*0, ll*1, ls],x2_perp_tt)
+        self.output_x2_parr = simpleText(self,"Loading..."      ,[sp_x*0, sp_y*2 + ls*1, ll*2, ls])
+        self.output_x2_perp = simpleText(self,"Loading..."      ,[sp_x*1, sp_y*2 + ls*1, ll*2, ls])
+
+        self.label_x1_scale = simpleText(self,"X1 full scale",[sp_x*3+ll*0-20, sp_y*2+ls*0, ll, ls])
+        self.label_x2_scale = simpleText(self,"X2 full scale",[sp_x*3+ll*0-20, sp_y*2+ls*1, ll, ls])
+        self.input_x1_scale = floatInput(self,[0,1e6],6,''   ,[sp_x*3+ll*1-20, sp_y*2+ls*0, ll, ls])
+        self.input_x2_scale = floatInput(self,[0,1e6],6,''   ,[sp_x*3+ll*1-20, sp_y*2+ls*1, ll, ls])
 
         col = gui.QColor(255,255,255)
         self.setStyleSheet('QWidget { background-color: %s }'%col.name())
 
         self.connection.ad5764_acbox.select_device(self.device)
-        self.connection.ad5764_acbox.read_voltages()
+        self.connection.ad5764_acbox.read_settings()
+
+        # size
+        self.size = [sp_x*4 - 25, sp_y*3 - 15]
 
     def write_frq(self):
         value = self.input_frq.getValue()
@@ -123,6 +142,26 @@ class ad5764_acbox_VFP_widget(gui.QWidget):
 
                 # phase
                 self.output_phs.setText(entry[6]+'\xb0')
+
+                # parallel / perpendicular
+                x1_fs    = self.input_x1_scale.getValue()
+                x2_fs    = self.input_x2_scale.getValue()
+                x1_value = float(entry[1])
+                x2_value = float(entry[3])
+                phase    = float(entry[6])
+                parr     = cos(tau*float(phase)/360.0)
+                perp     = sin(tau*float(phase)/360.0)
+                try:
+                    x2_parr  = (x2_fs / x1_fs) * (x2_value / x1_value) * parr
+                    x2_perp  = (x2_fs / x1_fs) * (x2_value / x1_value) * perp
+                    self.output_x2_parr.setText(str(x2_parr))
+                    self.output_x2_perp.setText(str(x2_perp))
+                except:
+                    self.output_x2_parr.setText("NaN")
+                    self.output_x2_perp.setText("NaN")
+
+
+                
 
 
                 
