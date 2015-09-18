@@ -85,9 +85,9 @@ class ad5764_acbox_VFP_widget(gui.QWidget):
         self.button_reset    = queryButton("reset",self,'',[sp_x*2 + ll*2 + ls, ls*2, ll, ls],self.do_reset)
 
         x2_perp_tt  = """Portion of X2 perpendicular to X1
-(X2 full scale / X1 full scale) * (X2 value / X1 value) * sin(offset)"""
+(X2 full scale / X1 full scale) * (X2 value / X1 value) * sin(phase)"""
         x2_par_tt = """Portion of X2 parallel to X1
-(X2 full scale / X1 full scale) * (X2 value / X1 value) * cos(offset)""" 
+(X2 full scale / X1 full scale) * (X2 value / X1 value) * cos(phase)""" 
 
         self.label_x2_parr  = simpleText(self,"X2 parallel"     ,[sp_x*0, sp_y*2 + ls*0, ll*1, ls],x2_par_tt )
         self.label_x2_perp  = simpleText(self,"X2 perpendicular",[sp_x*1, sp_y*2 + ls*0, ll*1, ls],x2_perp_tt)
