@@ -17,6 +17,9 @@ class portDisplay(gui.QWidget):
         self.button_set_value    = queryButton("set",self,"Set port %i to the enterred value"%num,
                                                [ll,iw+2],self.set_value)
 
+        # pressing enter simulates clicking on the button
+        self.input_set_value.returnPressed.connect(self.button_set_value.click)
+
         self.label_port_number   = simpleText(self,str(num),[ll+2+iw+4,int((iw-ls)//2),ls,ls])
         
         self.BNC_port_label      = gui.QLabel(self)

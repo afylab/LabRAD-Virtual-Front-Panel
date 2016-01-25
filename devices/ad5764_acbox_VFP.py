@@ -19,6 +19,9 @@ class portDisplay(gui.QWidget):
         self.button_set_value    = queryButton("set",self,"Set channel %s to the enterred value"%label,
                                                [ll,iw+2],self.set_value)
 
+        # pressing enter in edit window sends change signal
+        self.input_set_value.returnPressed.connect(self.button_set_value.click)
+
         self.label_port_number   = simpleText(self,label,[ll+2+iw+4,int((iw-ls)//2),ls,ls])
         
         self.BNC_port_label      = gui.QLabel(self)
@@ -77,6 +80,10 @@ class ad5764_acbox_VFP_widget(gui.QWidget):
         self.input_phs  = floatInput(self,[0,360],4,'',[sp_x * 2 + ll, ls*4, ll, ls],"set phase")
         self.button_frq = queryButton("set",self,'',[sp_x * 2, ls*1, ll, ls],self.write_frq)
         self.button_phs = queryButton("set",self,'',[sp_x * 2, ls*4, ll, ls],self.write_phs)
+
+        # pressing enter simulates click on button
+        self.input_frq.returnPressed.connect(self.button_frq.click)
+        self.input_phs.returnPressed.connect(self.button_phs.click)
 
         self.label_clockmult = simpleText(self,"Clock multiplier",[sp_x*2 + ll*2 + ls, ls*0, ll, ls])
         self.input_clockmult = intInput(self,[3,6],''     ,[sp_x*2 + ll*3 + ls, ls*0, int(ll//2), ls])
