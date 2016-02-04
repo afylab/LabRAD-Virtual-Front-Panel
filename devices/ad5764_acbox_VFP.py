@@ -2,6 +2,8 @@ from PyQt4 import QtGui as gui, QtCore as core
 from widgets import simpleText,intInput,floatInput,queryButton,colorBox
 import os
 
+global serverNameAD5764_ACBOX; serverNameAD5764_ACBOX = "ad5764_acbox"
+
 from math import pi,sin,cos
 global tau; tau = 2*pi
 
@@ -58,7 +60,7 @@ class ad5764_acbox_VFP_widget(gui.QWidget):
     def __init__(self,parent,connection,com):
         super(ad5764_acbox_VFP_widget,self).__init__(parent)
         self.connection = connection
-        self.device     = "acbox (%s)"%com
+        self.device     = "%s (%s)"%(serverNameAD5764_ACBOX,com)
         self.com        = com
         icon = gui.QPixmap(os.getcwd()+'\\devices\\resources\\BNCport.png')
         self.ports = []

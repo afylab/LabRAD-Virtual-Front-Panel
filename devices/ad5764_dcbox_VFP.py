@@ -2,6 +2,7 @@ from PyQt4 import QtGui as gui, QtCore as core
 from widgets import simpleText,floatInput,queryButton,colorBox
 import os
 
+global serverNameAD5764_DCBOX; serverNameAD5764_DCBOX = "ad5764_dcbox"
 
 class portDisplay(gui.QWidget):
     def __init__(self,parent,num,pos,icon,ll=96,ls=23,iw=32):
@@ -56,7 +57,7 @@ class ad5764_dcbox_VFP_widget(gui.QWidget):
     def __init__(self,parent,connection,com):
         super(ad5764_dcbox_VFP_widget,self).__init__(parent)
         self.connection = connection
-        self.device     = "dcbox (%s)"%com
+        self.device     = "%s (%s)"%(serverNameAD5764_DCBOX,com)
         self.com        = com
         icon = gui.QPixmap(os.getcwd()+'\\devices\\resources\\BNCport.png')
         self.ports = []
@@ -70,17 +71,16 @@ class ad5764_dcbox_VFP_widget(gui.QWidget):
         col = gui.QColor(255,255,255)
         self.setStyleSheet('QWidget { background-color: %s }'%col.name())
 
+        print(self.device)
         self.connection.ad5764_dcbox.select_device(self.device)
         self.connection.ad5764_dcbox.read_voltages()
 
         # size
         self.size = [sp_x*4 - 25, sp_y*2 - 4]
 
-    def update_readouts(self,voltages):
-        for entry in voltages:
-            if entry[0] == self.com:
-                for port in range(8):
-                    self.ports[port].update_readout(entry[port+1])
-                return True
-        print("Error: device com not found in voltage list")
-        return False
+    def update_readouts(self):
+        self.connection[serverNameAD5764_DCBOX].select_device(self.device)
+        voltages = self.connection[serverNameAD5764_DCBOX].get_voltages()
+        for port in range(8):
+            self.ports[port].update_readout(float(voltages[port]))
+        return True
