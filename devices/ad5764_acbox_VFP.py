@@ -55,7 +55,7 @@ class ad5764_acbox_VFP_widget(gui.QWidget):
     def __init__(self,parent,connection,com):
         super(ad5764_acbox_VFP_widget,self).__init__(parent)
         self.connection = connection
-        self.device     = "acbox (%s)"%com
+        self.device     = com
         self.com        = com
         icon = gui.QPixmap(os.getcwd()+'\\devices\\resources\\BNCport.png')
         self.ports = []
@@ -73,7 +73,7 @@ class ad5764_acbox_VFP_widget(gui.QWidget):
         self.label_phs  = simpleText(self,"Phase (degrees)",[sp_x * 2, ls*3, ll, ls])
         self.output_frq = simpleText(self,"Loading...",[sp_x * 2 + ll, ls*0, ll, ls])
         self.output_phs = simpleText(self,"Loading...",[sp_x * 2 + ll, ls*3, ll, ls])
-        self.input_frq  = intInput(self,  [0,1e8],  '',[sp_x * 2 + ll, ls*1, ll, ls],"set frequency")
+        self.input_frq  = floatInput(self,[0,1e8],4,'',[sp_x * 2 + ll, ls*1, ll, ls],"set frequency")#Changed this to float from int, added 4 for sig figs-Zach
         self.input_phs  = floatInput(self,[0,360],4,'',[sp_x * 2 + ll, ls*4, ll, ls],"set phase")
         self.button_frq = queryButton("set",self,'',[sp_x * 2, ls*1, ll, ls],self.write_frq)
         self.button_phs = queryButton("set",self,'',[sp_x * 2, ls*4, ll, ls],self.write_phs)
@@ -112,7 +112,7 @@ class ad5764_acbox_VFP_widget(gui.QWidget):
         value = self.input_frq.getValue()
         if not (str(value) == 'nan'):
             self.connection.ad5764_acbox.select_device(self.device)
-            print(self.connection.ad5764_acbox.set_frequency(float(self.input_frq.getValue())))
+            print(self.connection.ad5764_acbox.set_frequency(self.input_frq.getValue()))#removed float(self.input...) conversion-Zach
     
     def write_phs(self):
         value = self.input_phs.getValue()
@@ -133,7 +133,7 @@ class ad5764_acbox_VFP_widget(gui.QWidget):
 
     def update_readouts(self,voltages):
         for entry in voltages:
-            if entry[0] == self.com:
+            if "ad5764_acbox (%s)"%entry[0] == self.com:
                 for port in range(4):
                     self.ports[port].update_readout(entry[port+1])
                 

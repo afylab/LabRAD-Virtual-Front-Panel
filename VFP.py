@@ -1,5 +1,5 @@
 from PyQt4 import QtCore as core, QtGui as gui
-import sys,math,time
+import sys,math,time,os
 
 from devices.ad5764_dcbox_VFP import ad5764_dcbox_VFP_widget
 from devices.ad5764_acbox_VFP import ad5764_acbox_VFP_widget
@@ -25,9 +25,18 @@ class interface(gui.QMainWindow):
         import labrad
         firstAttempt=True
         success=connect=False
+
+        try:
+            pwd = os.environ['LABRADPASSWORD']
+            self.connection = labrad.connect(password = str(pwd))
+            success = True
+            connect = True
+        except:
+            pass
+
         while not success:
             if firstAttempt:pwd,ok=gui.QInputDialog.getText(self,"Password","Enter LabRAD password")
-            else:pwd,ok=gui.QInputDialog.getText(self,"Password","Something went wrong. Either thepassword\nwas incorrect or LabRAD isn't running.")
+            else:pwd,ok=gui.QInputDialog.getText(self,"Password","Something went wrong. Either the password\nwas incorrect or LabRAD isn't running.")
             try:
                 self.connection = labrad.connect(password = str(pwd))
                 success=True;connect=True
@@ -66,10 +75,10 @@ class interface(gui.QMainWindow):
         self.ad5764_dcbox_devices = []
         if 'ad5764_dcbox' in servers:
             self.ad5764_dcbox = True
-            devices = self.connection.serial_device_manager.list_ad5764_dcbox_devices()
+            devices = self.connection.ad5764_dxbox.list_devices()
             for device in devices:
-                port = device[0]
-                name = device[1][:-2]
+                port = device[1][:]#'ad5764_dcbox (COM%s)'%device[0]
+                name = device[1][:]
                 self.ad5764_dcbox_devices.append(ad5764_dcbox_VFP_widget(self,self.connection,port))
                 self.tabs.addTab(self.ad5764_dcbox_devices[-1],name)
         else:self.ad5764_dcbox=False
@@ -78,10 +87,10 @@ class interface(gui.QMainWindow):
         self.ad5764_acbox_devices = []
         if 'ad5764_acbox' in servers:
             self.ad5764_acbox=True
-            devices = self.connection.serial_device_manager.list_ad5764_acbox_devices()
+            devices = self.connection.ad5764_acbox.list_devices()
             for device in devices:
-                port = device[0]
-                name = device[1][:-2]
+                port = device[1][:]#'ad5764_acbox (COM%s)'%device[0]
+                name = device[1][:]
                 self.ad5764_acbox_devices.append(ad5764_acbox_VFP_widget(self,self.connection,port))
                 self.tabs.addTab(self.ad5764_acbox_devices[-1],name)
         else:self.ad5764_acbox=False
