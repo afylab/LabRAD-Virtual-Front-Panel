@@ -3,6 +3,12 @@ import sys,math,time,os
 
 from devices.ad5764_dcbox_VFP import ad5764_dcbox_VFP_widget
 from devices.ad5764_acbox_VFP import ad5764_acbox_VFP_widget
+from devices.quad_ad5780_VFP  import quad_ad5780_VFP_widget
+
+global serverNameQUAD_AD5780;  serverNameQUAD_AD5780  = "ad5780_dcbox"
+global serverNameAD5764_ACBOX; serverNameAD5764_ACBOX = "ad5764_acbox"
+global serverNameAD5764_DCBOX; serverNameAD5764_DCBOX = "ad5764_dcbox"
+
 
 class interface(gui.QMainWindow):
     def __init__(self,ll=96,ls=23,iw=32,bl=75):
@@ -73,9 +79,9 @@ class interface(gui.QMainWindow):
         #print(servers)
 
         self.ad5764_dcbox_devices = []
-        if 'ad5764_dcbox' in servers:
+        if serverNameAD5764_DCBOX in servers:
             self.ad5764_dcbox = True
-            devices = self.connection.ad5764_dxbox.list_devices()
+            devices = self.connection[serverNameAD5764_DCBOX].list_devices()
             for device in devices:
                 port = device[1][:]#'ad5764_dcbox (COM%s)'%device[0]
                 name = device[1][:]
@@ -85,15 +91,29 @@ class interface(gui.QMainWindow):
 
 
         self.ad5764_acbox_devices = []
-        if 'ad5764_acbox' in servers:
+        if serverNameAD5764_ACBOX in servers:
             self.ad5764_acbox=True
-            devices = self.connection.ad5764_acbox.list_devices()
+            devices = self.connection[serverNameAD5764_ACBOX].list_devices()
             for device in devices:
                 port = device[1][:]#'ad5764_acbox (COM%s)'%device[0]
                 name = device[1][:]
                 self.ad5764_acbox_devices.append(ad5764_acbox_VFP_widget(self,self.connection,port))
                 self.tabs.addTab(self.ad5764_acbox_devices[-1],name)
         else:self.ad5764_acbox=False
+
+        # quad_ad5780 devices
+        self.quad_ad5780_devices = []
+        if serverNameQUAD_AD5780 in servers:
+            self.quad_ad5780 = True
+            devices = self.connection[serverNameQUAD_AD5780].list_devices()
+            for device in devices:
+                port = device[1][:]
+                name = device[1][:]
+                self.quad_ad5780_devices.append(quad_ad5780_VFP_widget(self,self.connection,port))
+                self.tabs.addTab(self.quad_ad5780_devices[-1],name)
+                print(port,name)
+
+        else:self.quad_ad5780=False
 
         self.setFixedSize((self.ll+self.bl)*4 + self.iw*3 + 6, (self.iw+self.ls)*2 + self.iw + 27)
         self.move(2,2)
