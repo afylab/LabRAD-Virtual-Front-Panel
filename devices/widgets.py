@@ -1,5 +1,92 @@
 from PyQt4 import QtGui as gui, QtCore as core
 
+class panelShell(gui.QWidget):
+
+	displayEnabled  = core.pyqtSignal()
+	displayDisabled = core.pyqtSignal()
+	displayToggled  = core.pyqtSignal()
+
+	buttonTextHide = "Hide"
+	buttonTextShow = "Show"
+	buttonTooltipHide = ""
+	buttonTooltipShow = ""
+
+	labelPlaceholderText = "Device name"
+
+	def __init__(self,parent=None):
+		super(panelShell,self).__init__(parent)
+
+		self.labelTitle = gui.QLineEdit()
+		self.labelTitle.setPlaceholderText(self.labelPlaceholderText)
+
+		self.buttonHideShow = gui.QPushButton(self.buttonTextHide)
+		self.buttonHideShow.setToolTip(self.buttonTooltipHide)
+		self.buttonHideShow.clicked.connect(self.toggleDisplay)
+		self.displayActive = True
+
+		self.titleBar = gui.QHBoxLayout()
+		self.titleBar.setSpacing(0)
+		self.titleBar.setContentsMargins(0,0,0,0)
+		self.titleBar.addWidget(self.labelTitle)
+		self.titleBar.addWidget(self.buttonHideShow)
+		self.editingEnabled = True
+
+		# The child widget will be added to the layout once it is set
+		self.childWidget    = None  # child widget to be displayed below title bar
+		self.childWidgetSet = False # whether or not it's been set yet
+
+		self.mainLayout = gui.QVBoxLayout()
+		self.mainLayout.setSpacing(0)
+		self.mainLayout.setContentsMargins(0,0,0,0)
+		self.mainLayout.addLayout(self.titleBar)
+		self.setLayout(self.mainLayout)
+
+	def toggleDisplay(self):
+		if self.childWidgetSet:
+			if self.displayActive:
+				self.disableDisplay()
+			else:
+				self.enableDisplay()
+			self.displayToggled.emit()
+
+	def enableDisplay(self):
+		if self.childWidgetSet:
+			self.childWidget.setVisible(True)
+			self.displayActive = True
+			self.buttonHideShow.setText(self.buttonTextHide)
+			self.buttonHideShow.setToolTip(self.buttonTooltipHide)
+			self.displayEnabled.emit()
+
+	def disableDisplay(self):
+		if self.childWidgetSet:
+			self.childWidget.setVisible(False)
+			self.displayActive = False
+			self.buttonHideShow.setText(self.buttonTextShow)
+			self.buttonHideShow.setToolTip(self.buttonTooltipShow)
+			self.displayDisabled.emit()
+
+	def setEditingEnabled(self,isEnabled):
+		if isEnabled:
+			self.editingEnabled = True
+			self.labelTitle.setReadOnly(False)
+		else:
+			self.editingEnabled = False
+			self.labelTitle.setReadOnly(True)
+
+	def getEditingEnabled(self):
+		return bool(self.editingEnabled)
+
+	def setChildWidget(self,childWidget):
+		self.mainLayout.addWidget(childWidget)
+		self.childWidget = childWidget
+		self.childWidgetSet = True
+
+
+
+
+
+
+
 class colorBox(gui.QWidget):
     def __init__(self,parent,geometry,color=[255,255,255]):
         super(colorBox,self).__init__(parent)

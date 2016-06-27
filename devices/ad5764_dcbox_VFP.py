@@ -5,35 +5,67 @@ import os
 global serverNameAD5764_DCBOX; serverNameAD5764_DCBOX = "ad5764_dcbox"
 
 class portDisplay(gui.QWidget):
-    def __init__(self,parent,num,pos,icon,ll=96,ls=23,iw=32):
+    def __init__(self,parent,num):
         super(portDisplay,self).__init__(parent)
         self.parent = parent
         self.port   = num
-        
-        self.label_current_value = simpleText(self,"Loading...",[0,0,ll,ls],"Current value")
-        self.input_set_value     = floatInput(self,[-10,10],8,
-                                              'Enter a value here and press "set" to set the voltage on the selected DCbox.\nBe careful not to use this feature while a sweep is using the selected port.',
-                                              [0,iw+2,ll,ls],
-                                              'Set value')
-        self.button_set_value    = queryButton("set",self,"Set port %i to the enterred value"%num,
-                                               [ll,iw+2],self.set_value)
+        self.vBoxLeft   = gui.QVBoxLayout(); self.vBoxLeft.setSpacing(0)  ; self.vBoxLeft.setContentsMargins(0,0,0,0)
+        self.vBoxRight  = gui.QVBoxLayout(); self.vBoxRight.setSpacing(0) ; self.vBoxRight.setContentsMargins(0,0,0,0)
+        self.mainLayout = gui.QHBoxLayout(); self.mainLayout.setSpacing(0); self.mainLayout.setContentsMargins(0,0,0,0)
+
+        self.label_custom_name   = gui.QLineEdit(); self.label_custom_name.setPlaceholderText("custom name")
+        self.label_current_value = gui.QLineEdit(); self.label_current_value.setPlaceholderText("current value")
+        self.input_set_value     = gui.QLineEdit(); self.input_set_value.setPlaceholderText("enter value")
+        self.label_current_value.setReadOnly(True)
+        self.vBoxLeft.addWidget(self.label_custom_name)
+        self.vBoxLeft.addWidget(self.label_current_value)
+        self.vBoxLeft.addWidget(self.input_set_value)
+
+        self.button_hide_show    = gui.QPushButton("Hide"); self.button_hide_show.clicked.connect(self.toggle_display)
+        self.label_port_number   = gui.QLineEdit(); self.label_port_number.setText("Port %i"%self.port)
+        self.button_set_value    = gui.QPushButton("set"); self.button_set_value.clicked.connect(self.set_value)
+        self.label_port_number.setReadOnly(True)
+        self.vBoxRight.addWidget(self.button_hide_show)
+        self.vBoxRight.addWidget(self.label_port_number)
+        self.vBoxRight.addWidget(self.button_set_value)
+
+        self.mainLayout.addLayout(self.vBoxLeft)
+        self.mainLayout.addLayout(self.vBoxRight)
+        self.setLayout(self.mainLayout)
 
         # pressing enter simulates clicking on the button
         self.input_set_value.returnPressed.connect(self.button_set_value.click)
 
-        self.label_port_number   = simpleText(self,str(num),[ll+2+iw+4,int((iw-ls)//2),ls,ls])
-        
-        self.BNC_port_label      = gui.QLabel(self)
-        self.BNC_port_label.setPixmap(icon)
-        self.BNC_port_label.setGeometry(ll+2,0,iw,iw)
+        self.display_enabled = True
 
-        button_size = self.button_set_value.sizeHint().width()
+    def toggle_display(self):
+        if self.display_enabled:
+            self.disable_display()
+        else:
+            self.enable_display()
 
-        self.move(pos[0],pos[1])
-        self.setMinimumSize(ll+max([iw,button_size]),ls+iw)
+    def enable_display(self):
+        self.display_enabled = True
+        self.label_current_value.setVisible(True)
+        self.input_set_value.setVisible(True)
+        self.label_port_number.setVisible(True)
+        self.button_set_value.setVisible(True)
+        self.button_hide_show.setText("Hide")
+
+    def disable_display(self):
+        self.display_enabled = False
+        self.label_current_value.setVisible(False)
+        self.input_set_value.setVisible(False)
+        self.label_port_number.setVisible(False)
+        self.button_set_value.setVisible(False)
+        self.button_hide_show.setText("Show")
 
     def set_value(self):
-        value = self.input_set_value.getValue()
+        try:
+            value = float(self.input_set_value.text())
+        except:
+            value = 'nan'
+
         if str(value) in ['nan','inf']:
             print("Error: invalid value.")
             return False
@@ -61,12 +93,24 @@ class ad5764_dcbox_VFP_widget(gui.QWidget):
         self.com        = com
         icon = gui.QPixmap(os.getcwd()+'\\devices\\resources\\BNCport.png')
         self.ports = []
-        sp_x = 171 + 32
-        sp_y = 32 + 23 + 32
         for port in range(8):
-            self.ports.append(
-                portDisplay(self,port,[sp_x*(port%4),sp_y*int((port//4))],icon)
-                )
+            self.ports.append(portDisplay(self,port))#,[sp_x*(port%4),sp_y*int((port//4))],icon))
+
+        self.hBoxTopRow = gui.QHBoxLayout()
+        self.hBoxBotRow = gui.QHBoxLayout()
+
+        for port in [0,1,2,3]:self.hBoxTopRow.addWidget(self.ports[port])
+        for port in [4,5,6,7]:self.hBoxBotRow.addWidget(self.ports[port])
+
+        #self.hBoxTopRow.setContentsMargins(0,0,0,0)#; self.hBoxBotRow.setSpacing(0)
+        #self.hBoxBotRow.setContentsMargins(0,0,0,0)#; self.hBoxTopRow.setSpacing(0)
+
+        self.mainLayout = gui.QVBoxLayout()
+        self.mainLayout.setContentsMargins(0,0,0,0)
+        #self.mainLayout.setSpacing(0)
+        self.mainLayout.addLayout(self.hBoxTopRow)
+        self.mainLayout.addLayout(self.hBoxBotRow)
+        self.setLayout(self.mainLayout)
 
         col = gui.QColor(255,255,255)
         self.setStyleSheet('QWidget { background-color: %s }'%col.name())
@@ -76,7 +120,7 @@ class ad5764_dcbox_VFP_widget(gui.QWidget):
         self.connection.ad5764_dcbox.read_voltages()
 
         # size
-        self.size = [sp_x*4 - 25, sp_y*2 - 4]
+        self.size = [0,0]#[sp_x*4 - 25, sp_y*2 - 4]
 
     def update_readouts(self):
         self.connection[serverNameAD5764_DCBOX].select_device(self.device)
@@ -84,3 +128,6 @@ class ad5764_dcbox_VFP_widget(gui.QWidget):
         for port in range(8):
             self.ports[port].update_readout(float(voltages[port]))
         return True
+
+    def setEditingPermission(self,canEdit):
+        for port in self.ports:port.label_custom_name.setReadOnly(not canEdit)
