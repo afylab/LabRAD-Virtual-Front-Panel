@@ -118,8 +118,8 @@ class ad5764_acbox_VFP_widget(gui.QWidget):
 
         self.label_frq  = gui.QLineEdit();self.label_frq.setText("Frequency (Hz)");self.label_frq.setReadOnly(True)
         self.label_phs  = gui.QLineEdit();self.label_phs.setText("Phase (degrees)");self.label_phs.setReadOnly(True)
-        self.output_frq = gui.QLineEdit()
-        self.output_phs = gui.QLineEdit()
+        self.output_frq = gui.QLineEdit();self.output_frq.setReadOnly(True)
+        self.output_phs = gui.QLineEdit();self.output_phs.setReadOnly(True)
         self.input_frq  = gui.QLineEdit()
         self.input_phs  = gui.QLineEdit()
         self.button_frq = gui.QPushButton("set")
@@ -173,6 +173,7 @@ class ad5764_acbox_VFP_widget(gui.QWidget):
         self.vBoxInitReset.addWidget(self.button_reset)
 
         self.hBoxControlPanel = gui.QHBoxLayout() # top layout, all controls
+        self.hBoxControlPanel.setContentsMargins(0,0,0,0)
         self.hBoxControlPanel.addLayout(self.hBoxXY)
         self.hBoxControlPanel.addLayout(self.vBoxPhsFrq)
         self.hBoxControlPanel.addLayout(self.vBoxInitReset)
