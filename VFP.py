@@ -114,7 +114,7 @@ class interface(gui.QWidget):
                 ad5764_acbox_shell.labelTitle.setText(name)
                 ad5764_acbox_shell.setChildWidget(ad5764_acbox_device) 
 
-                self.ad5764_acbox_devices.append(ad5764_acbox_VFP_widget(self,self.connection,port))
+                self.ad5764_acbox_devices.append(ad5764_acbox_shell)
                 self.vBoxPanels.addWidget(self.ad5764_acbox_devices[-1])#,name)
         else:self.ad5764_acbox=False
 
