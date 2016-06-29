@@ -78,7 +78,7 @@ class portDisplay(gui.QWidget):
         try:
             #print(self.port,value)
             self.parent.connection.ad5764_acbox.select_device(self.parent.device)
-            response =  self.parent.connection.ad5764_acbox.set_channel_voltage(self.port,value)
+            response =  self.parent.connection.ad5764_acbox.set_voltage(self.port,value)
             print(response)
         except:
             print("Error: something went wrong. The device selected might not be a ACbox device.")
@@ -216,7 +216,7 @@ class ad5764_acbox_VFP_widget(gui.QWidget):
         self.setStyleSheet('QWidget { background-color: %s }'%col.name())
 
         self.connection.ad5764_acbox.select_device(self.device)
-        self.connection.ad5764_acbox.read_settings()
+        self.connection.ad5764_acbox.send_signals()
 
         self.setLayout(self.hBoxControlPanel)
 

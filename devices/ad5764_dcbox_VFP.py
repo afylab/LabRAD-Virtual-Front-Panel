@@ -122,7 +122,7 @@ class ad5764_dcbox_VFP_widget(gui.QWidget):
         self.connection._backend.cxn.addListener(self.port_update,self.connection.ad5764_dcbox.ID,context=None,ID=self.listenerID)
 
         self.connection.ad5764_dcbox.select_device(self.device)
-        self.connection.ad5764_dcbox.read_voltages()
+        self.connection.ad5764_dcbox.send_voltage_signals()
 
     def port_update(self,ctx,data):
         print(ctx,data)
