@@ -4,6 +4,7 @@ import os
 
 global serverNameAD5764_DCBOX; serverNameAD5764_DCBOX = "ad5764_dcbox"
 
+
 class portDisplay(gui.QWidget):
     def __init__(self,parent,num):
         super(portDisplay,self).__init__(parent)
@@ -86,11 +87,13 @@ class portDisplay(gui.QWidget):
 
 
 class ad5764_dcbox_VFP_widget(gui.QWidget):
-    def __init__(self,parent,connection,com):
+    def __init__(self,parent,connection,com,devID,IDGen):
         super(ad5764_dcbox_VFP_widget,self).__init__(parent)
         self.connection = connection
+        self.listenerID = IDGen.next()
         self.device     = "%s (%s)"%(serverNameAD5764_DCBOX,com)
         self.com        = com
+        self.devID      = devID
         icon = gui.QPixmap(os.getcwd()+'\\devices\\resources\\BNCport.png')
         self.ports = []
         for port in range(8):
@@ -115,12 +118,17 @@ class ad5764_dcbox_VFP_widget(gui.QWidget):
         col = gui.QColor(255,255,255)
         self.setStyleSheet('QWidget { background-color: %s }'%col.name())
 
-        print(self.device)
+        self.connection.ad5764_dcbox.signal__channel_voltage_changed(self.listenerID)
+        self.connection._backend.cxn.addListener(self.port_update,self.connection.ad5764_dcbox.ID,context=None,ID=self.listenerID)
+
         self.connection.ad5764_dcbox.select_device(self.device)
         self.connection.ad5764_dcbox.read_voltages()
 
-        # size
-        self.size = [0,0]#[sp_x*4 - 25, sp_y*2 - 4]
+    def port_update(self,ctx,data):
+        print(ctx,data)
+        if ctx.ID[0]==self.devID:
+            port = int(data[0])
+            self.ports[port].update_readout(data[1][:-1])
 
     def update_readouts(self):
         self.connection[serverNameAD5764_DCBOX].select_device(self.device)

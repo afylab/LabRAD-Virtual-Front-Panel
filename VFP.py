@@ -8,21 +8,25 @@ from devices.widgets          import panelShell
 global serverNameAD5764_DCBOX; serverNameAD5764_DCBOX = "ad5764_dcbox"
 global serverNameAD5764_ACBOX; serverNameAD5764_ACBOX = "ad5764_acbox"
 
+def listenerIDGen():
+    ID = 10000
+    while True:
+        yield ID
+        ID += 1
+
 class interface(gui.QWidget):
     def __init__(self,ll=96,ls=23,iw=32,bl=75):
         super(interface,self).__init__()
+        self.ID = listenerIDGen()
 
-        self.ll=ll
-        self.ls=ls
-        self.iw=iw
-        self.bl=bl
+        # self.ll=ll
+        # self.ls=ls
+        # self.iw=iw
+        # self.bl=bl
 
         self.connect()
 
-        self.timer = core.QTimer(self)
-        self.timer.setInterval(1000)
-        self.timer.timeout.connect(self.timer_event)
-        self.timer.start()
+
         
 
     def connect(self):
@@ -31,19 +35,6 @@ class interface(gui.QWidget):
         self.password = None
         self.doUI()
         #gui.qApp.quit()
-
-    def timer_event(self):
-        if self.ad5764_dcbox:
-            for device in self.ad5764_dcbox_devices:
-                device.childWidget.update_readouts()
-            #dc_voltages = self.connection.ad5764_dcbox.get_voltages()
-            #for device in self.ad5764_dcbox_devices:
-            #    device.update_readouts(dc_voltages)
-
-        if self.ad5764_acbox:
-            ac_voltages = self.connection.ad5764_acbox.get_settings()
-            for device in self.ad5764_acbox_devices:
-                device.childWidget.update_readouts(ac_voltages)
 
     def does_directory_exist(self,directory):
         for end in range(1,len(directory)):
@@ -87,11 +78,15 @@ class interface(gui.QWidget):
         if serverNameAD5764_DCBOX in servers:
             self.ad5764_dcbox = True
             devices = self.fetch_devices(serverNameAD5764_DCBOX)
-            for device in devices:
-                port = device[1][1]
-                name = device[0]
 
-                ad5764_dcbox_device = ad5764_dcbox_VFP_widget(self,self.connection,port)
+
+            for device in devices:
+                port  = device[1][1]
+                name  = device[0]
+                devID = [dev[0] for dev in self.connection[serverNameAD5764_DCBOX].list_devices() if port in dev[1]][0]
+                #print(devID)
+
+                ad5764_dcbox_device = ad5764_dcbox_VFP_widget(self,self.connection,port,devID,self.ID)
                 ad5764_dcbox_shell  = panelShell()
                 ad5764_dcbox_shell.labelTitle.setText(name)
                 ad5764_dcbox_shell.setChildWidget(ad5764_dcbox_device)
@@ -106,10 +101,12 @@ class interface(gui.QWidget):
             self.ad5764_acbox=True
             devices = self.fetch_devices(serverNameAD5764_ACBOX)
             for device in devices:
-                port = device[1][1]
-                name = device[0]
+                port  = device[1][1]
+                name  = device[0]
+                devID = [dev[0] for dev in self.connection[serverNameAD5764_ACBOX].list_devices() if port in dev[1]][0]
+                #print(devID)
 
-                ad5764_acbox_device = ad5764_acbox_VFP_widget(self,self.connection,port)
+                ad5764_acbox_device = ad5764_acbox_VFP_widget(self,self.connection,port,devID,self.ID)
                 ad5764_acbox_shell  = panelShell()
                 ad5764_acbox_shell.labelTitle.setText(name)
                 ad5764_acbox_shell.setChildWidget(ad5764_acbox_device) 

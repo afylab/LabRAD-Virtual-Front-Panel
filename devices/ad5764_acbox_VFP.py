@@ -90,19 +90,38 @@ class portDisplay(gui.QWidget):
 
 
 class ad5764_acbox_VFP_widget(gui.QWidget):
-    def __init__(self,parent,connection,com):
+    def __init__(self,parent,connection,com,devID,IDGen):
         super(ad5764_acbox_VFP_widget,self).__init__(parent)
         self.connection = connection
         self.device     = "%s (%s)"%(serverNameAD5764_ACBOX,com)
         self.com        = com
-    
+        self.devID      = devID
+
+        self.LIDVoltage = IDGen.next()
+        self.LIDFreq    = IDGen.next()
+        self.LIDPhase   = IDGen.next()
+        self.LIDInit    = IDGen.next()
+        self.LIDReset   = IDGen.next()
+
+        self.connection.ad5764_acbox.signal__channel_voltage_changed(self.LIDVoltage)
+        self.connection.ad5764_acbox.signal__frequency_changed(self.LIDFreq)
+        self.connection.ad5764_acbox.signal__phase_changed(self.LIDPhase)
+        self.connection.ad5764_acbox.signal__init_done(self.LIDInit)
+        self.connection.ad5764_acbox.signal__reset_done(self.LIDReset)
+
+        self.connection._backend.cxn.addListener(self.port_update ,self.connection.ad5764_acbox.ID,context=None,ID=self.LIDVoltage)
+        self.connection._backend.cxn.addListener(self.freq_update ,self.connection.ad5764_acbox.ID,context=None,ID=self.LIDFreq)
+        self.connection._backend.cxn.addListener(self.phase_update,self.connection.ad5764_acbox.ID,context=None,ID=self.LIDPhase)
+        self.connection._backend.cxn.addListener(self.init_update ,self.connection.ad5764_acbox.ID,context=None,ID=self.LIDInit)
+        self.connection._backend.cxn.addListener(self.reset_update,self.connection.ad5764_acbox.ID,context=None,ID=self.LIDReset)
 
         self.ports = []
 
-        labels = ['X1','Y1','X2','Y2']
+        self.labels    = ['X1','Y1','X2','Y2']
+        self.fromLabel = {'X1':0,'Y1':1,'X2':2,'Y2':3}
         for port in range(4):
             self.ports.append(
-                portDisplay(self,labels[port])
+                portDisplay(self,self.labels[port])
                 )
 
         self.vBoxXChannels = gui.QVBoxLayout() # x channel ports
@@ -178,10 +197,6 @@ class ad5764_acbox_VFP_widget(gui.QWidget):
         self.hBoxControlPanel.addLayout(self.vBoxPhsFrq)
         self.hBoxControlPanel.addLayout(self.vBoxInitReset)
 
-
-
-
-
         x2_perp_tt  = """Portion of X2 perpendicular to X1
 (X2 full scale / X1 full scale) * (X2 value / X1 value) * sin(phase)"""
         x2_parr_tt = """Portion of X2 parallel to X1
@@ -210,6 +225,7 @@ class ad5764_acbox_VFP_widget(gui.QWidget):
             value = float(self.input_frq.text())
         except:
             value = 'nan'
+            print("Error: invalid value.")
         if not (str(value) == 'nan'):
             self.connection.ad5764_acbox.select_device(self.device)
             print(self.connection.ad5764_acbox.set_frequency(value))
@@ -219,6 +235,7 @@ class ad5764_acbox_VFP_widget(gui.QWidget):
             value = float(self.input_phs.text())
         except:
             value = 'nan'
+            print("Error: invalid value.")
         if not (str(value) == 'nan'):
             self.connection.ad5764_acbox.select_device(self.device)
             print(self.connection.ad5764_acbox.set_phase(value))
@@ -228,6 +245,7 @@ class ad5764_acbox_VFP_widget(gui.QWidget):
             clock_mult = int(self.input_clockmult.text())
         except:
             clock_mult = 'nan'
+            print("Error: invalid value for clock multiplier.")
         if not (str(clock_mult) == 'nan'):
             self.connection.ad5764_acbox.select_device(self.device)
             print(self.connection.ad5764_acbox.initialize(clock_mult))
@@ -239,6 +257,16 @@ class ad5764_acbox_VFP_widget(gui.QWidget):
     def setEditingPermission(self,isEnabled):
         for port in self.ports:port.label_custom_name.setReadOnly(not isEnabled)
 
+    def port_update(self,ctx,data):
+        if ctx.ID[0]==self.devID:self.ports[self.fromLabel[data[0]]].update_readout(data[1])
+    def freq_update(self,ctx,data):
+        if ctx.ID[0]==self.devID:self.output_frq.setText(data[:-3])
+    def phase_update(self,ctx,data):
+        if ctx.ID[0]==self.devID:self.output_phs.setText(data)
+    def init_update(self,ctx,data):
+        if ctx.ID[0]==self.devID:pass
+    def reset_update(self,ctx,data):
+        if ctx.ID[0]==self.devID:pass
 
     def update_readouts(self,voltages):
         for entry in voltages:
