@@ -3,10 +3,12 @@ import sys,math,time
 
 from devices.ad5764_dcbox_VFP import ad5764_dcbox_VFP_widget
 from devices.ad5764_acbox_VFP import ad5764_acbox_VFP_widget
+from devices.quad_ad5780_VFP  import quad_ad5780_VFP_widget
 from devices.widgets          import panelShell
 
 global serverNameAD5764_DCBOX; serverNameAD5764_DCBOX = "ad5764_dcbox"
 global serverNameAD5764_ACBOX; serverNameAD5764_ACBOX = "ad5764_acbox"
+global serverNameQuadAD5780  ; serverNameQuadAD5780   = "dcbox_quad_ad5780"
 
 def listenerIDGen():
     ID = 10000
@@ -18,16 +20,7 @@ class interface(gui.QWidget):
     def __init__(self,ll=96,ls=23,iw=32,bl=75):
         super(interface,self).__init__()
         self.ID = listenerIDGen()
-
-        # self.ll=ll
-        # self.ls=ls
-        # self.iw=iw
-        # self.bl=bl
-
         self.connect()
-
-
-        
 
     def connect(self):
         import labrad
@@ -53,12 +46,12 @@ class interface(gui.QWidget):
 
     def setEditingPermission(self,permission):
         if permission:
-            for dev in self.ad5764_dcbox_devices+self.ad5764_acbox_devices:
+            for dev in self.ad5764_dcbox_devices+self.ad5764_acbox_devices+self.quad_ad5780_devices:
                 dev.setEditingEnabled(True)
                 dev.childWidget.setEditingPermission(True)
 
         else:
-            for dev in self.ad5764_dcbox_devices+self.ad5764_acbox_devices:
+            for dev in self.ad5764_dcbox_devices+self.ad5764_acbox_devices+self.quad_ad5780_devices:
                 dev.setEditingEnabled(False)
                 dev.childWidget.setEditingPermission(False)
 
@@ -114,6 +107,24 @@ class interface(gui.QWidget):
                 self.ad5764_acbox_devices.append(ad5764_acbox_shell)
                 self.vBoxPanels.addWidget(self.ad5764_acbox_devices[-1])#,name)
         else:self.ad5764_acbox=False
+
+        self.quad_ad5780_devices = []
+        if serverNameQuadAD5780 in servers:
+            self.quad_ad5780 = True
+            devices = self.fetch_devices(serverNameQuadAD5780)
+            for device in devices:
+                port  = device[1][1]
+                name  = device[0]
+                devID = [dev[0] for dev in self.connection[serverNameQuadAD5780].list_devices() if port in dev[1]][0]
+                quad_ad5780_device = quad_ad5780_VFP_widget(self,self.connection,port,devID,self.ID)
+                quad_ad5780_shell  = panelShell()
+                quad_ad5780_shell.labelTitle.setText(name)
+                quad_ad5780_shell.setChildWidget(quad_ad5780_device)
+
+                self.quad_ad5780_devices.append(quad_ad5780_shell)
+                self.vBoxPanels.addWidget(self.quad_ad5780_devices[-1])
+        else:self.quad_ad5780=False
+
 
         self.layout = gui.QHBoxLayout()
         #self.layout.addWidget(self.)

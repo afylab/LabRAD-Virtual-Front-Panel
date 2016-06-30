@@ -2,7 +2,7 @@ from PyQt4 import QtGui as gui, QtCore as core
 from widgets import simpleText,floatInput,queryButton,colorBox
 import os
 
-global serverNameAD5764_DCBOX; serverNameAD5764_DCBOX = "ad5764_dcbox"
+global serverNameQuadAD5780; serverNameQuadAD5780 = "dcbox_quad_ad5780"
 
 
 class portDisplay(gui.QWidget):
@@ -73,68 +73,59 @@ class portDisplay(gui.QWidget):
         if (value > 10) or (value < -10):
             print("Error: value too large. Must be between -10.0 and 10.0")
             return False
-        try:
-            self.parent.connection.ad5764_dcbox.select_device(self.parent.device)
-            response =  self.parent.connection.ad5764_dcbox.set_voltage(self.port, value)
-            print(response)
-        except:
-            print("Error: something went wrong. The device selected might not be a DCbox device.")
+        #try:
+        self.parent.connection.dcbox_quad_ad5780.select_device(self.parent.devID)
+        response =  self.parent.connection.dcbox_quad_ad5780.set_voltage(self.port, value)
+        print(response)
+        #except:
+        #    print("Error: something went wrong. The device selected might not be a DCbox device.")
 
     def update_readout(self,value):
         self.label_current_value.setText(str(value))
 
 
 
-
-class ad5764_dcbox_VFP_widget(gui.QWidget):
+class quad_ad5780_VFP_widget(gui.QWidget):
     def __init__(self,parent,connection,com,devID,IDGen):
-        super(ad5764_dcbox_VFP_widget,self).__init__(parent)
+        super(quad_ad5780_VFP_widget,self).__init__(parent)
         self.connection = connection
         self.listenerID = IDGen.next()
-        self.device     = "%s (%s)"%(serverNameAD5764_DCBOX,com)
+        self.device     = "%s - %s"%(serverNameQuadAD5780,com)
         self.com        = com
         self.devID      = devID
+
         self.ports = []
-        for port in range(8):
-            self.ports.append(portDisplay(self,port))#,[sp_x*(port%4),sp_y*int((port//4))],icon))
+        for port in range(4):
+            self.ports.append(portDisplay(self,port))
 
-        self.hBoxTopRow = gui.QHBoxLayout()
+        self.hBoxTopRow   = gui.QHBoxLayout()
+        self.hBoxTopRow.addWidget(self.ports[0])
+        self.hBoxTopRow.addWidget(self.ports[1])
+        self.hBoxTopRow.addWidget(self.ports[2])
+        self.hBoxTopRow.addWidget(self.ports[3])
+
         self.hBoxBotRow = gui.QHBoxLayout()
+        self.buttonInit = gui.QPushButton("Initialize")
+        self.buttonInit.clicked.connect(self.do_init)
+        self.hBoxBotRow.addWidget(self.buttonInit)
 
-        for port in [0,1,2,3]:self.hBoxTopRow.addWidget(self.ports[port])
-        for port in [4,5,6,7]:self.hBoxBotRow.addWidget(self.ports[port])
+        self.vBoxMainLayout = gui.QVBoxLayout()
+        self.vBoxMainLayout.addLayout(self.hBoxTopRow)
+        self.vBoxMainLayout.addLayout(self.hBoxBotRow)
 
-        #self.hBoxTopRow.setContentsMargins(0,0,0,0)#; self.hBoxBotRow.setSpacing(0)
-        #self.hBoxBotRow.setContentsMargins(0,0,0,0)#; self.hBoxTopRow.setSpacing(0)
+        self.setLayout(self.vBoxMainLayout)
 
-        self.mainLayout = gui.QVBoxLayout()
-        self.mainLayout.setContentsMargins(0,0,0,0)
-        #self.mainLayout.setSpacing(0)
-        self.mainLayout.addLayout(self.hBoxTopRow)
-        self.mainLayout.addLayout(self.hBoxBotRow)
-        self.setLayout(self.mainLayout)
+        self.connection.dcbox_quad_ad5780.signal__channel_voltage_changed(self.listenerID)
+        self.connection._backend.cxn.addListener(self.port_update,self.connection.dcbox_quad_ad5780.ID,context=None,ID=self.listenerID)
 
-        col = gui.QColor(255,255,255)
-        self.setStyleSheet('QWidget { background-color: %s }'%col.name())
+        self.connection.dcbox_quad_ad5780.select_device(self.devID)
+        self.connection.dcbox_quad_ad5780.send_voltage_signals()
 
-        self.connection.ad5764_dcbox.signal__channel_voltage_changed(self.listenerID)
-        self.connection._backend.cxn.addListener(self.port_update,self.connection.ad5764_dcbox.ID,context=None,ID=self.listenerID)
-
-        self.connection.ad5764_dcbox.select_device(self.device)
-        self.connection.ad5764_dcbox.send_voltage_signals()
+    def do_init(self,event):
+        self.connection.dcbox_quad_ad5780.initialize()
 
     def port_update(self,ctx,data):
-        #print(ctx,data)
-        if ctx.ID[0]==self.devID:
-            port = int(data[0])
-            self.ports[port].update_readout(data[1][:-1])
-
-    def update_readouts(self):
-        self.connection[serverNameAD5764_DCBOX].select_device(self.device)
-        voltages = self.connection[serverNameAD5764_DCBOX].get_voltages()
-        for port in range(8):
-            self.ports[port].update_readout(float(voltages[port]))
-        return True
+        self.ports[int(data[0])].label_current_value.setText(data[1])
 
     def setEditingPermission(self,canEdit):
         for port in self.ports:port.label_custom_name.setReadOnly(not canEdit)
