@@ -76,7 +76,12 @@ class interface(gui.QWidget):
             for device in devices:
                 port  = device[1][1]
                 name  = device[0]
-                devID = [dev[0] for dev in self.connection[serverNameAD5764_DCBOX].list_devices() if dev[1].endswith('(%s)'%port)][0]
+
+                try:
+                    devID = [dev[0] for dev in self.connection[serverNameAD5764_DCBOX].list_devices() if dev[1].endswith('(%s)'%port)][0]
+                except:
+                    # if it the corresponding device isn't active...
+                    continue
 
                 ad5764_dcbox_device = ad5764_dcbox_VFP_widget(self,self.connection,port,devID,self.ID)
                 ad5764_dcbox_shell  = panelShell()
@@ -95,8 +100,12 @@ class interface(gui.QWidget):
             for device in devices:
                 port  = device[1][1]
                 name  = device[0]
-                devID = [dev[0] for dev in self.connection[serverNameAD5764_ACBOX].list_devices() if dev[1].endswith('(%s)'%port)][0]
-                #print(devID)
+
+                try:
+                    devID = [dev[0] for dev in self.connection[serverNameAD5764_ACBOX].list_devices() if dev[1].endswith('(%s)'%port)][0]
+                except:
+                    # if it the corresponding device isn't active...
+                    continue
 
                 ad5764_acbox_device = ad5764_acbox_VFP_widget(self,self.connection,port,devID,self.ID)
                 ad5764_acbox_shell  = panelShell()
@@ -114,9 +123,13 @@ class interface(gui.QWidget):
             for device in devices:
                 port  = device[1][1]
                 name  = device[0]
-                #print(device)
-                #print(port)
-                devID = [dev[0] for dev in self.connection[serverNameQuadAD5780].list_devices() if dev[1].endswith('(%s)'%port)][0]
+                
+                try:
+                    devID = [dev[0] for dev in self.connection[serverNameQuadAD5780].list_devices() if dev[1].endswith('(%s)'%port)][0]
+                except:
+                    # if it the corresponding device isn't active...
+                    continue
+                
                 quad_ad5780_device = quad_ad5780_VFP_widget(self,self.connection,port,devID,self.ID)
                 quad_ad5780_shell  = panelShell()
                 quad_ad5780_shell.labelTitle.setText(name)
