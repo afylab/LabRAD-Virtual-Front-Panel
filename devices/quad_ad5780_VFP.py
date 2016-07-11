@@ -1,5 +1,4 @@
 from PyQt4 import QtGui as gui, QtCore as core
-from widgets import simpleText,floatInput,queryButton,colorBox
 import os
 
 global serverNameQuadAD5780; serverNameQuadAD5780 = "dcbox_quad_ad5780"

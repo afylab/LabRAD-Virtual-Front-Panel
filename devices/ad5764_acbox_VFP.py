@@ -1,5 +1,4 @@
 from PyQt4 import QtGui as gui, QtCore as core
-from widgets import simpleText,intInput,floatInput,queryButton,colorBox
 import os
 
 global serverNameAD5764_ACBOX; serverNameAD5764_ACBOX = "ad5764_acbox"
