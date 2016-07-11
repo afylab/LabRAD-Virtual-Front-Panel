@@ -115,6 +115,8 @@ class interface(gui.QWidget):
             for device in devices:
                 port  = device[1][1]
                 name  = device[0]
+                #print(device)
+                #print(port)
                 devID = [dev[0] for dev in self.connection[serverNameQuadAD5780].list_devices() if port in dev[1]][0]
                 quad_ad5780_device = quad_ad5780_VFP_widget(self,self.connection,port,devID,self.ID)
                 quad_ad5780_shell  = panelShell()

@@ -122,6 +122,7 @@ class quad_ad5780_VFP_widget(gui.QWidget):
         self.connection.dcbox_quad_ad5780.send_voltage_signals()
 
     def do_init(self,event):
+        self.connection.dcbox_quad_ad5780.select_device(self.devID)
         self.connection.dcbox_quad_ad5780.initialize()
 
     def port_update(self,ctx,data):
