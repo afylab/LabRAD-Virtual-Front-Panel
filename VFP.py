@@ -29,6 +29,12 @@ class interface(gui.QWidget):
         self.doUI()
         #gui.qApp.quit()
 
+    def closeEvent(self,event):
+        print("Stopping LabRAD connection...")
+        self.connection.disconnect()
+        print("LabRAD connection stopped.")
+
+
     def does_directory_exist(self,directory):
         for end in range(1,len(directory)):
             self.connection.registry.cd(directory[:end])

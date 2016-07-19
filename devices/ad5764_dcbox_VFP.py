@@ -113,9 +113,6 @@ class ad5764_dcbox_VFP_widget(gui.QWidget):
         self.mainLayout.addLayout(self.hBoxBotRow)
         self.setLayout(self.mainLayout)
 
-        col = gui.QColor(255,255,255)
-        self.setStyleSheet('QWidget { background-color: %s }'%col.name())
-
         self.connection.ad5764_dcbox.signal__channel_voltage_changed(self.listenerID)
         self.connection._backend.cxn.addListener(self.port_update,self.connection.ad5764_dcbox.ID,context=None,ID=self.listenerID)
 
