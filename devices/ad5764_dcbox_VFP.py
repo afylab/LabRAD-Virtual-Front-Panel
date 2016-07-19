@@ -95,7 +95,7 @@ class ad5764_dcbox_VFP_widget(gui.QWidget):
         self.devID      = devID
         self.ports = []
         for port in range(8):
-            self.ports.append(portDisplay(self,port))#,[sp_x*(port%4),sp_y*int((port//4))],icon))
+            self.ports.append(portDisplay(self,port))
 
         self.hBoxTopRow = gui.QHBoxLayout()
         self.hBoxBotRow = gui.QHBoxLayout()
@@ -120,10 +120,9 @@ class ad5764_dcbox_VFP_widget(gui.QWidget):
         self.connection.ad5764_dcbox.send_voltage_signals()
 
     def port_update(self,ctx,data):
-        #print(ctx,data)
         if ctx.ID[0]==self.devID:
             port = int(data[0])
-            self.ports[port].update_readout(data[1][:-1])
+            self.ports[port].update_readout(data[1])
 
     def update_readouts(self):
         self.connection[serverNameAD5764_DCBOX].select_device(self.device)

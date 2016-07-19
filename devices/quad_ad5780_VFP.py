@@ -109,6 +109,7 @@ class quad_ad5780_VFP_widget(gui.QWidget):
         self.hBoxBotRow.addWidget(self.buttonInit)
 
         self.vBoxMainLayout = gui.QVBoxLayout()
+        self.vBoxMainLayout.setContentsMargins(0,0,0,0)
         self.vBoxMainLayout.addLayout(self.hBoxTopRow)
         self.vBoxMainLayout.addLayout(self.hBoxBotRow)
 
