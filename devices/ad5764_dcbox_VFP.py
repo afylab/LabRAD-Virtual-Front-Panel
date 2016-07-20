@@ -1,5 +1,4 @@
 from PyQt4 import QtGui as gui, QtCore as core
-import os
 
 global serverNameAD5764_DCBOX; serverNameAD5764_DCBOX = "ad5764_dcbox"
 

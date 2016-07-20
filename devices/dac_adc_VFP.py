@@ -199,7 +199,7 @@ class dac_adc_VFP_widget(gui.QWidget):
         self.connection._backend.cxn.addListener(self.in_update , self.connection[SERVER_NAME].ID, context=None, ID=self.inListenId )
 
         self.connection[SERVER_NAME].select_device(self.devID)
-        #self.connection[SERVER_NAME].send_signals() # not implemented yet
+        self.connection[SERVER_NAME].send_read_requests()
 
     def out_update(self,ctx,data):
         if ctx.ID[0] == self.devID:
