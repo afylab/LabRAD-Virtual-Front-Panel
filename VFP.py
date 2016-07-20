@@ -4,11 +4,13 @@ import sys,math,time
 from devices.ad5764_dcbox_VFP import ad5764_dcbox_VFP_widget
 from devices.ad5764_acbox_VFP import ad5764_acbox_VFP_widget
 from devices.quad_ad5780_VFP  import quad_ad5780_VFP_widget
+from devices.dac_adc_VFP      import dac_adc_VFP_widget
 from devices.widgets          import panelShell
 
 global serverNameAD5764_DCBOX; serverNameAD5764_DCBOX = "ad5764_dcbox"
 global serverNameAD5764_ACBOX; serverNameAD5764_ACBOX = "ad5764_acbox"
 global serverNameQuadAD5780  ; serverNameQuadAD5780   = "dcbox_quad_ad5780"
+global serverNameDacAdc      ; serverNameDacAdc       = "dac_adc"
 
 def listenerIDGen():
     ID = 10000
@@ -19,6 +21,8 @@ def listenerIDGen():
 class interface(gui.QWidget):
     def __init__(self,ll=96,ls=23,iw=32,bl=75):
         super(interface,self).__init__()
+        self.setWindowTitle("Virtual Front Panel")
+
         self.ID = listenerIDGen()
         self.connect()
 
@@ -52,12 +56,12 @@ class interface(gui.QWidget):
 
     def setEditingPermission(self,permission):
         if permission:
-            for dev in self.ad5764_dcbox_devices+self.ad5764_acbox_devices+self.quad_ad5780_devices:
+            for dev in self.ad5764_dcbox_devices+self.ad5764_acbox_devices+self.quad_ad5780_devices+self.dac_adc_devices:
                 dev.setEditingEnabled(True)
                 dev.childWidget.setEditingPermission(True)
 
         else:
-            for dev in self.ad5764_dcbox_devices+self.ad5764_acbox_devices+self.quad_ad5780_devices:
+            for dev in self.ad5764_dcbox_devices+self.ad5764_acbox_devices+self.quad_ad5780_devices+self.dac_adc_devices:
                 dev.setEditingEnabled(False)
                 dev.childWidget.setEditingPermission(False)
 
@@ -145,6 +149,29 @@ class interface(gui.QWidget):
                 self.vBoxPanels.addWidget(self.quad_ad5780_devices[-1])
         else:self.quad_ad5780=False
 
+        self.dac_adc_devices = []
+        if serverNameDacAdc in servers:
+            self.dac_adc = True
+            devices = self.fetch_devices(serverNameDacAdc)
+            for device in devices:
+                port = device[1][1]
+                name = device[0]
+
+
+                try:
+                    devID = [dev[0] for dev in self.connection[serverNameDacAdc].list_devices() if dev[1].endswith('(%s)'%port)][0]
+                except:
+                    # if it the corresponding device isn't active...
+                    continue
+
+                dac_adc_device = dac_adc_VFP_widget(self,self.connection,port,devID,self.ID)
+                dac_adc_shell  = panelShell()
+                dac_adc_shell.labelTitle.setText(name)
+                dac_adc_shell.setChildWidget(dac_adc_device)
+
+                self.dac_adc_devices.append(dac_adc_shell)
+                self.vBoxPanels.addWidget(self.dac_adc_devices[-1])
+        else:self.dac_adc=False
 
         self.layout = gui.QHBoxLayout()
         #self.layout.addWidget(self.)
